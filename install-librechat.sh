@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # LibreChat inštalačný skript pre LXC kontajner
+# Upravené: MafiaRKD, 2025-06
 # Repo: https://github.com/MafiaRKD/librechat-lxc
 
 set -e
@@ -21,7 +22,11 @@ info "Aktualizujem systém..."
 apt update && apt upgrade -y
 
 info "Inštalujem základné závislosti..."
-apt install -y curl gnupg git npm nodejs ca-certificates
+apt install -y curl gnupg git ca-certificates
+
+info "Pridávam Node.js 20 repozitár..."
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
 
 info "Pridávam MongoDB 7 repozitár..."
 curl -fsSL https://pgp.mongodb.com/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
@@ -44,6 +49,9 @@ npm install
 
 info "Kopírujem konfiguračný súbor..."
 cp .env.example .env
+
+info "Upravujem port v .env na 8080..."
+sed -i 's/^PORT=.*/PORT=8080/' .env
 
 info "Vytváram systemd službu..."
 cat <<EOF > /etc/systemd/system/librechat.service
@@ -69,4 +77,4 @@ systemctl start librechat
 info "Hotovo!"
 echo -e "\n${green}🔑 Nezabudni pridať svoj OpenAI API key do súboru .env v /opt/librechat${clear}"
 echo -e "Príklad:\n\nOPENAI_API_KEY=sk-xxxx...\n"
-echo -e "📍 Webové rozhranie bude na http://IP:3080\n"
+echo -e "📍 Webové rozhranie bude na http://IP:8080\n"
