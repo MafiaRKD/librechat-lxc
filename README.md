@@ -5,7 +5,7 @@ Automatizovaný skript pre nasadenie LibreChat s OpenAI GPT-4o v LXC kontajneri 
 
 Vytvor Debian LXC kontajner cez komunitný skript:
 
-    bash -c "$(wget -qLO - https://github.com/tteck/Proxmox/raw/main/ct/debian.sh)"
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/debian.sh)"
 
 Spusti inštaláciu LibreChat vo vnútri kontajnera:
 
