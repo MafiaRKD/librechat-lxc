@@ -1,31 +1,48 @@
-# librechat-lxc
+📦 LibreChat LXC
+
 Automatizovaný skript pre nasadenie LibreChat s OpenAI GPT-4o v LXC kontajneri na Proxmoxe.
+🚀 Inštalácia
 
-LibreChat v LXC (Proxmox)
-
-Skript na jednoduché nasadenie LibreChat s GPT-4o cez OpenAI API v Debian LXC kontajneri na Proxmoxe.
-
-✅ Inštalácia:
-
-Vytvor Debian LXC cez komunitný skript:
+Vytvor Debian LXC kontajner cez komunitný skript:
 
     bash -c "$(wget -qLO - https://github.com/tteck/Proxmox/raw/main/ct/debian.sh)"
 
-Prihlás sa do kontajnera a spusti:
+Spusti inštaláciu LibreChat vo vnútri kontajnera:
 
-    wget https://raw.githubusercontent.com/<tvoje-meno>/librechat-lxc/main/install-librechat.sh
+    wget https://raw.githubusercontent.com/MafiaRKD/librechat-lxc/main/install-librechat.sh
     chmod +x install-librechat.sh
     ./install-librechat.sh
-## ⚠️ Bezpečnosť
 
-Tento skript **neobsahuje** žiadne API kľúče. Po inštalácii si musíš **manuálne upraviť** `.env` súbor v `/opt/librechat` a pridať tam:
+🔐 OpenAI API kľúč
 
-    ```env
-    OPENAI_API_KEY=sk-xxxxxx
+Po inštalácii uprav .env súbor:
 
-LibreChat beží na http://<ip-kontajnera>:3080
+    nano /opt/librechat/.env
 
-🔧 Obsah skriptu:
-Inštaluje Node.js 20, MongoDB 7
-Sťahuje LibreChat a konfiguruje .env
-Spúšťa ho na porte 3080
+A pridaj svoj OpenAI kľúč:
+
+    OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+🌐 Prístup
+
+LibreChat bude dostupný na adrese:
+
+http://<IP_adresa_kontajnera>:3080
+
+⚙️ Čo skript robí
+
+Inštaluje:
+
+Node.js 20
+
+MongoDB 7
+
+Sťahuje a konfiguruje LibreChat
+
+Pripraví .env súbor (bez kľúča)
+
+Vytvorí systemd službu pre automatické spustenie po reštarte
+
+ℹ️ Poznámka
+
+Tento skript neobsahuje žiadne API kľúče – každý používateľ si ich musí doplniť sám do .env.
