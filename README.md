@@ -15,8 +15,13 @@ Prihlás sa do kontajnera a spusti:
 
     wget https://raw.githubusercontent.com/<tvoje-meno>/librechat-lxc/main/install-librechat.sh
     chmod +x install-librechat.sh
-    nano install-librechat.sh   # vlož svoj OpenAI API kľúč
     ./install-librechat.sh
+## ⚠️ Bezpečnosť
+
+Tento skript **neobsahuje** žiadne API kľúče. Po inštalácii si musíš **manuálne upraviť** `.env` súbor v `/opt/librechat` a pridať tam:
+
+    ```env
+    OPENAI_API_KEY=sk-xxxxxx
 
 LibreChat beží na http://<ip-kontajnera>:3080
 
