@@ -1,49 +1,62 @@
 #!/bin/bash
 
-### === KONFIGURÁCIA === ###
-OPENAI_API_KEY="sk-SEM_DAJ_SVOJ_KLUC"
-INSTALL_DIR="/opt/librechat"
-LIBRECHAT_PORT="3080"
+# LibreChat inštalačný skript pre LXC kontajner
+# Repo: https://github.com/MafiaRKD/librechat-lxc
 
-### === UPDATE SYSTÉMU === ###
-echo "[1/7] Aktualizujem systém..."
+set -e
+
+green='\033[0;32m'
+red='\033[0;31m'
+clear='\033[0m'
+
+info() {
+  echo -e "${green}[INFO]${clear} $1"
+}
+
+error() {
+  echo -e "${red}[ERROR]${clear} $1" >&2
+}
+
+info "Aktualizujem systém..."
 apt update && apt upgrade -y
 
-### === NODE.JS === ###
-echo "[2/7] Inštalujem Node.js..."
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt install -y nodejs
+info "Inštalujem závislosti..."
+apt install -y curl git npm nodejs mongodb
 
-### === MONGODB === ###
-echo "[3/7] Inštalujem MongoDB..."
-apt install -y gnupg curl software-properties-common
-curl -fsSL https://pgp.mongodb.com/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
-echo "deb [signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" > /etc/apt/sources.list.d/mongodb-org-7.0.list
-apt update && apt install -y mongodb-org
-systemctl enable mongod
-systemctl start mongod
+info "Klonujem LibreChat..."
+cd /opt
+rm -rf librechat
+git clone https://github.com/danny-avila/LibreChat.git librechat
+cd librechat
 
-### === LIBRECHAT === ###
-echo "[4/7] Sťahujem LibreChat..."
-git clone https://github.com/danny-avila/LibreChat.git "$INSTALL_DIR"
-cd "$INSTALL_DIR"
+info "Inštalujem npm balíky..."
 npm install
 
-### === KONFIGURÁCIA .env === ###
-echo "[5/7] Nastavujem .env..."
+info "Kopírujem konfiguračný súbor..."
 cp .env.example .env
 
-sed -i "s|OPENAI_API_KEY=.*|OPENAI_API_KEY=$OPENAI_API_KEY|" .env
-sed -i "s|MONGO_URI=.*|MONGO_URI=mongodb://localhost:27017/LibreChat|" .env
-sed -i "s|DEFAULT_MODEL=.*|DEFAULT_MODEL=gpt-4o|" .env
-sed -i "s|PORT=.*|PORT=$LIBRECHAT_PORT|" .env
+info "Vytváram systemd službu..."
+cat <<EOF > /etc/systemd/system/librechat.service
+[Unit]
+Description=LibreChat Server
+After=network.target mongod.service
 
-### === ŠTART APPKY === ###
-echo "[6/7] Spúšťam LibreChat..."
-npm run build
-npm run start &
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/librechat
+ExecStart=/usr/bin/npm start
+Restart=on-failure
 
-echo "[7/7] Hotovo!"
-echo ""
-echo "🔗 Otvor si LibreChat na: http://<IP_TVOJHO_LXC>:${LIBRECHAT_PORT}"
-echo "Ak potrebuješ reverzný proxy, viem ti s tým pomôcť 😉"
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reexec
+systemctl enable librechat
+systemctl start librechat
+
+info "Hotovo!"
+echo -e "\n${green}🔑 Nezabudni pridať svoj OpenAI API key do súboru .env v /opt/librechat${clear}"
+echo -e "Príklad:\n\nOPENAI_API_KEY=sk-xxxx...\n"
+echo -e "📍 Webové rozhranie bude na http://IP:3080\n"
